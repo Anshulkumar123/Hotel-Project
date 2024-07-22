@@ -2,14 +2,13 @@ package com.Hotel.Hotel.controller;
 
 import com.Hotel.Hotel.dto.LoginDto;
 import com.Hotel.Hotel.dto.PropertyUserDto;
+import com.Hotel.Hotel.dto.TokenResponse;
 import com.Hotel.Hotel.entity.PropertyUser;
 import com.Hotel.Hotel.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -30,11 +29,19 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginDto loginDto){
+    public ResponseEntity<?> login(@RequestBody LoginDto loginDto){
         String token = userService.verifyLogin(loginDto);
         if (token !=null){
-            return new ResponseEntity<>(token, HttpStatus.OK);
+            TokenResponse tokenResponse = new TokenResponse();
+            tokenResponse.setToken(token);
+            return new ResponseEntity<>(tokenResponse, HttpStatus.OK);
         }
         return new ResponseEntity<>("in valid credentials", HttpStatus.UNAUTHORIZED);
     }
+
+    @GetMapping("/profile")
+    public PropertyUser getCurrentUserProfile(@AuthenticationPrincipal PropertyUser user){
+        return user;
+    }
+
 }
